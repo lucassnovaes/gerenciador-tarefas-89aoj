@@ -1,162 +1,149 @@
-import moment from 'moment';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { connectToDB } from '../../middlewares/connectToDB';
+import { DefaultResponseMsg } from '../../types/DefaultResponseMsg';
+import { connectDb } from '../../middlewares/connectDb';
 import { jwtValidator } from '../../middlewares/jwtValidator';
-import { TaskModel } from '../../models/Task';
-import { UserModel } from '../../models/User';
-import { DefaultMessageResponse } from '../../types/DefaultMessageResponse';
-import { Task } from '../../types/Task';
+import { TaskRequest } from '../../types/TaskRequest';
+import moment from 'moment';
+import { TaskModel } from '../../models/TaskModel';
+import { GetTasksParams } from '../../types/GetTasksParams';
+import { corsPolicy } from '../../middlewares/corsMidd';
 
-const endpoint = async (req: NextApiRequest, res: NextApiResponse<DefaultMessageResponse | any>) => {
-    try{
+const taskEndpoint = async (req: NextApiRequest, res: NextApiResponse<DefaultResponseMsg | any>) => {
 
-        const userId = req?.body?.userId ? req?.body?.userId : req?.query?.userId as string;
-        const failedValidation = await validateUser(userId);
-        if(failedValidation){
-            return res.status(400).json({ error: failedValidation});
-        }
+    const { userId } = req?.body || req?.query;
 
-        if(req.method === 'POST'){
+    console.log(req.body);
+    switch (req.method) {
+        case 'POST':
             return await saveTask(req, res, userId);
-        }else if(req.method === 'GET'){
-            return await getTasks(req, res, userId);
-        }else if(req.method === 'PUT'){
+        case 'PUT':
             return await updateTask(req, res, userId);
-        }else if(req.method === 'DELETE'){
+        case 'DELETE':
             return await deleteTask(req, res, userId);
-        }
-
-        res.status(400).json({ error: 'Metodo solicitado nao existe '});
-    }catch(e){
-        console.log('Ocorreu erro ao gerenciar tarefas: ', e);
-        res.status(500).json({ error: 'Ocorreu erro ao gerenciar tarefas, tente novamente '});
+        case 'GET':
+            return await getTasks(req, res, userId);
+        default:
+            return res.status(405).json({ error: 'Metodo infomado não é valido' });
     }
 }
 
-const validateTaskAndReturnValue = async (req: NextApiRequest, userId: string) => {
-    const id = req.query?.id as string;
-
-    if (!id || id.trim() === '') {
-        return null;
+const validateBody = (body : TaskRequest, userId : string) => {
+    if (!userId) {
+        return 'Usuario não informado';
     }
 
-    const taskFound = await TaskModel.findById(id);
-    if (!taskFound || taskFound.userId !== userId) {
-        return null;
+    if (!body.name || body.name.length < 2) {
+        return 'Nome inválido';
     }
 
-    return taskFound;
+    if (!body.previsionDate) {
+        return 'Data inválida';
+    }
 }
 
-const updateTask = async (req: NextApiRequest, res: NextApiResponse<DefaultMessageResponse | Task[]>, userId: string) => {
-    const taskFound = await validateTaskAndReturnValue(req, userId);
-    if (!taskFound) {
-        return res.status(400).json({ error: 'Tarefa nao encontrada' });
+const saveTask = async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+    const body = req.body as TaskRequest;
+
+    const errorMsg = validateBody(body, userId);
+    if(errorMsg){
+        return res.status(400).json({ error: errorMsg });
     }
 
-    if (req.body) {
-        const task = req.body as Task;
-
-        if (task.name && task.name.trim() !== '') {
-            taskFound.name = task.name;
-        }
-
-        if (task.finishPrevisionDate) {
-            taskFound.finishPrevisionDate = task.finishPrevisionDate;
-        }
-
-        if (task.finishDate) {
-            taskFound.finishDate = task.finishDate;
-        }
-
-        await TaskModel.findByIdAndUpdate({ _id: taskFound._id }, taskFound);
-        return res.status(200).json({ msg: 'Tarefa atualizada com sucesso' });
+    const previsionDate = moment(body.previsionDate);
+    const now = moment();
+    now.set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
+    if (previsionDate.isBefore(now)) {
+        return res.status(400).json({ error: 'Data não pode ser menor que hoje' });
     }
 
-    return res.status(400).json({ error: 'Parametro de entrada invalidos' });
+    const task = {
+        name: body.name,
+        userId,
+        previsionDate: previsionDate.toDate()
+    }
+
+    await TaskModel.create(task);
+    return res.status(200).json({ msg: 'Tarefa Criada' });
 }
 
-const deleteTask = async (req: NextApiRequest, res: NextApiResponse<DefaultMessageResponse | Task[]>, userId: string) => {
-    const taskFound = await validateTaskAndReturnValue(req, userId);
-    if (!taskFound) {
-        return res.status(400).json({ error: 'Tarefa nao encontrada' });
+const updateTask = async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+    const body = req.body as TaskRequest;
+
+    const taskId = req?.query?.id;
+    if (!taskId) {
+        return res.status(400).json({ error: 'Tarefa não informada' });
     }
 
-    await TaskModel.findByIdAndDelete({ _id: taskFound._id });
-    return res.status(200).json({ msg: 'Tarefa deletada com sucesso' });
+    const task = await TaskModel.findById(taskId);
+    if(!task || task.userId !== userId){
+        return res.status(400).json({ error: 'Tarefa não encontrada' });
+    }
+
+    const errorMsg = validateBody(body, userId);
+    if(errorMsg){
+        return res.status(400).json({ error: errorMsg });
+    }
+
+    const previsionDate = moment(body.previsionDate);
+    
+    task.name = body.name;
+    task.previsionDate = previsionDate;
+    task.finishDate = body.finishDate ? moment(body.finishDate) : null;
+
+    await TaskModel.findByIdAndUpdate({ _id: task._id}, task);
+    return res.status(200).json({ msg: 'Tarefa Alterada' });
 }
 
-const getTasks = async (req: NextApiRequest, res: NextApiResponse<DefaultMessageResponse | Task[]>, userId: string) => {
+const deleteTask = async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+    const taskId = req?.query?.id;
+    if (!taskId) {
+        return res.status(400).json({ error: 'Tarefa não informada' });
+    }
 
-    const params = req.query as any;
+    const task = await TaskModel.findById(taskId);
+    if(!task || task.userId !== userId){
+        return res.status(400).json({ error: 'Tarefa não encontrada' });
+    }
+
+    await TaskModel.findByIdAndDelete({ _id: task._id});
+    return res.status(200).json({ msg: 'Tarefa Deletada' });
+}
+
+const getTasks = async (req: NextApiRequest, res: NextApiResponse, userId: string) => {
+   
+    const params =  req.query as GetTasksParams;
 
     const query = {
         userId
     } as any;
 
-    if (params?.finishPrevisionStart) {
-        const inputDate = moment(params?.finishPrevisionStart);
-        query.finishPrevisionDate = { $gte: inputDate.format('yyyy-MM-DD') }
+    if(params?.previsionDateStart){
+        const startDate = moment(params?.previsionDateStart).toDate();
+        query.previsionDate = {$gte : startDate};
     }
 
-    if (params?.finishPrevisionEnd) {
-        const lastDate = moment(params?.finishPrevisionEnd);
-        if (!query.finishPrevisionDate) {
-            query.finishPrevisionDate = {};
+    if(params?.previsionDateEnd){
+        const endDate = moment(params?.previsionDateEnd).toDate();
+        
+        if(!query.previsionDate){
+            query.previsionDate = {}
         }
-        query.finishPrevisionDate.$lte = lastDate.format('yyyy-MM-DD')
+
+        query.previsionDate.$lte = endDate;
     }
 
-    if (params?.status) {
+    if(params?.status){
         const status = parseInt(params?.status);
-        switch (status) {
-            case 1:
-                query.finishDate = null;
+        switch(status){
+            case 1 : query.finishDate = null;
                 break;
-            case 2:
-                query.finishDate = { $ne: null };
-                break;
-            default: break;
+            case 2 : query.finishDate = {$ne : null};
         }
     }
 
-    const result = await TaskModel.find(query) as Task[];
+    const result = await TaskModel.find(query);
     return res.status(200).json(result);
 }
 
-const validateUser = async (userId: string) => {
-    if (!userId) {
-        return 'Usuario nao informado';
-    }
-
-    const userFound = await UserModel.findById(userId);
-    if (!userFound) {
-        return 'Usuario nao encontrado';
-    }
-}
-
-const saveTask = async (req: NextApiRequest, res: NextApiResponse<DefaultMessageResponse>, userId: string) => {
-    if (req.body) {
-        const task = req.body as Task;
-        if (!task.name || task.name.length < 2) {
-            return res.status(400).json({ error: 'Nome da tarefa invalida' });
-        }
-
-        if (!task.finishPrevisionDate || moment(task.finishPrevisionDate).isBefore(moment())) {
-            return res.status(400).json({ error: 'Data de previsao invalida ou menor que hoje' });
-        }
-
-        const final = {
-            ...task,
-            userId,
-            finishDate: undefined
-        } as any;
-
-        await TaskModel.create(final);
-        return res.status(200).json({ msg: 'Tarefa criada com sucesso' });
-    }
-
-    return res.status(400).json({ error: 'Parametros de entrada invalido' });
-}
-
-export default connectToDB(jwtValidator(endpoint));
+// export default connectDb(jwtValidator(taskEndpoint));
+export default corsPolicy(connectDb(jwtValidator(taskEndpoint)));

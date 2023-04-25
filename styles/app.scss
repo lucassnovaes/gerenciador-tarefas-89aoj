@@ -1,98 +1,89 @@
-@import '~bootstrap/scss/bootstrap';
-@import './config.scss';
+@import "~bootstrap/scss/bootstrap";
 
-@font-face{
+@font-face {
     font-family: 'Biennale Regular';
-    font-weight: 'normal';
-    font-style: 'normal';
+    font-style: normal;
+    font-weight: normal;
     src: url('../public/fonts/BiennaleRegular.otf') format('opentype');
 }
 
-html{
-    height: 100%;
-}
-
-body{
+html {
     height: 100%;
     font-family: 'Biennale Regular';
-    font-size: 14px;
+}
 
-    @media screen and (min-widht: $mediaQueryDesktop){
-        font-size: 16px;
-    }
+body {
+    height: 100%;
+    font-family: 'Biennale Regular';
 }
 
 #__next{
     height: 100%;
     display: flex;
-    flex-direction: column;
     flex: 1 1 0%;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     -webkit-box-pack: center;
     -webkit-box-align: center;
-    padding: 0;
+    padding: 0px;
 }
 
-input, select{
-    font-style: 'normal';
-    font-weight: 'normal';
-    font-size: '14px'; 
+@import './config.scss';
+@import './login.scss';
+@import './header.scss';
+@import './filtros.scss';
+@import './list.scss';
+@import './item.scss';
+@import './footer.scss';
+@import './modal.scss';
+
+input, select {
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
     letter-spacing: 0.01em;
-    column: $primaryColor;
-    min-width: 150px;
+    color: $primaryColor;
+    min-width: 170px;
     background-color: transparent;
-    border-top: 0px;
-    border-left: 0px;
-    border-right: 0px;
-    border-bottom: 1px solid $mediumGreyColor;
+    font-family: 'Biennale Regular';
+
+    border-top-width: 0px;
+    border-left-width: 0px;
+    border-right-width: 0px;
+    border-bottom-width: 0.01em;
+    border-color: $mediumGreyColor;
+
     outline: none;
 
-    &:focus{
-        border-bottom-color: $primaryColor;
+    cursor: pointer;
+
+    &:focus {
+        border-color: $primaryColor;
     }
 
-    &::placeholder{
+    &::placeholder {
         color: $mediumGreyColor;
         opacity: 1;
     }
 
-    &:-ms-input-placeholder{
+    &:-ms-input-placeholder {
         color: $mediumGreyColor;
     }
 
-    &::-ms-input-placeholder{
+    &::-ms-input-placeholder {
         color: $mediumGreyColor;
     }
-
 }
 
-button{
-    border-radius: 12px;
-    height: 56px;
-    background-color: $mediumGreyColor;
-    outline: none;
-    border: none;
-    color: white;
-    padding: 10px 5px;
-    &:hover{
-        background-color: $primaryColor;
-    }
-}
-
-@media screen and (min-widht: $mediaQueryDesktop){
-    input,select{
-        font-size: 16px;
+@media screen and (min-width:1024px) {
+    input, select {
+        border-top-width: 1px;
+        border-left-width: 1px;
+        border-right-width: 1px;
+        border-bottom-width: 1px;
         border-radius: 8px;
-        border: 1px solid;
+        padding: 5px;
+        outline: none;
     }
 }
-
-
-.error{
-    text-align: center;
-    color: $errorColor;
-    font-weight: bold;
-}
-
-@import './login.scss';
