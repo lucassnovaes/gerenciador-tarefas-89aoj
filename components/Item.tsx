@@ -1,31 +1,35 @@
-import { NextPage } from 'next'; 
-import React from 'react'; 
-import {Task} from '../types/Task'; 
-import moment from 'moment'; 
- 
-type ItemProps = { 
-    task : Task, 
-    selectTaskToEdit(t: Task) : void 
-} 
- 
-export const Item:NextPage<ItemProps> = ({task, selectTaskToEdit}) => { 
-     
-    const geDataText = (finishDate : string | undefined, previsionDate : string) => { 
-        if(finishDate){ 
-            return `Concluído em: ${moment(finishDate).format('DD/MM/yyyy')}`; 
-        } 
-        return `Previsão em: ${moment(previsionDate).format('DD/MM/yyyy')}`; 
-    } 
-     
-    return ( 
-        <div className={"container-item"+ (task.finishDate? "" : " ativo")} 
-            onClick={_ => task.finishDate ? null : selectTaskToEdit(task)}> 
-            <img className='img' src={task.finishDate? '/checked.svg' : '/not-checked.svg'} 
-                alt={task.finishDate? 'Atividade Concluída' : 'Atividade Ativa'}/> 
-            <div> 
-                <p className={task.finishDate? "concluido" : ""}>{task.name}</p> 
-                <span>{geDataText(task.finishDate, task.previsionDate)}</span> 
-            </div> 
-        </div> 
-    ); 
-} 
+/* eslint-disable @next/next/no-img-element */
+import { Task } from "@/types/Task"
+import moment from "moment"
+import { NextPage } from "next"
+
+type ItemProps = {
+    task: Task,
+    selectTask(t:Task) : void
+}
+
+export const Item : NextPage<ItemProps> = ({task, selectTask}) => {
+    const isTaskFinished = task?.finishDate || false;
+
+    const getDataText = () => {
+        if(isTaskFinished){
+            return `Concluída em: ${moment(task.finishDate).format('DD/MM/yyyy')}`
+        }
+
+        return `Conclusão em: ${moment(task.finishPrevisionDate).format('DD/MM/yyyy')}`
+    }
+
+    return (
+        <div className={'container-item ' + (isTaskFinished ? '' : 'active')}
+            onClick={() => isTaskFinished ? null : selectTask(task)}>
+            <img 
+                src={isTaskFinished ? 'checked.svg' : 'not-checked.svg'}
+                alt={isTaskFinished ? 'Tarefa concluída' : 'Tarefa em aberto'}
+            />
+            <div>
+                <p className={isTaskFinished ? 'finished' : ''}>{task.name}</p>
+                <span>{getDataText()}</span>
+            </div>
+        </div>
+    )
+}

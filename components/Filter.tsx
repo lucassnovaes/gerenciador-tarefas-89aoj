@@ -1,48 +1,44 @@
-import React, { useState } from "react";
-import {NextPage} from 'next';
+/* eslint-disable @next/next/no-img-element */
+import { NextPage } from "next";
+import { useState } from "react"
 
-type FilterProps = { 
-    periodoDe: string, 
-    setPeriodoDe(s: string) : void, 
-    periodoAte: string, 
-    setPeriodoAte(s: string) : void, 
-    status: string, 
-    setStatus(s: string) : void, 
-} 
+type FilterProps = {
+    previsionDateStart : string,
+    previsionDateEnd : string,
+    status: number,
+    setPrevisionDateStart(s:string):void,
+    setPrevisionDateEnd(s:string):void,
+    setStatus(n:number):void,
+}
 
-export const Filter: NextPage<FilterProps> = ({
-    periodoDe, periodoAte, status,
-    setPeriodoDe, setPeriodoAte, setStatus
-}) => {
+export const Filter : NextPage<FilterProps> = ({
+    previsionDateStart, 
+    previsionDateEnd, 
+    status, 
+    setPrevisionDateStart, 
+    setPrevisionDateEnd, 
+    setStatus}) => {
+
     const [showFilters, setShowFilters] = useState(false);
-    
+
     return (
-        <div className='container-filtros'>
-            <div className='title'>
+        <div className="container-filter">
+            <div className="title">
                 <span>Tarefas</span>
-                <img src='/filter.svg' alt='Filtrar Tarefas' onClick={e => setShowFilters(!showFilters)}/>
-                <div className='form'>
+                <img src="/filter.svg" alt="Filtrar tarefas" onClick={() => setShowFilters(!showFilters)}/>
+                <div className="form">
                     <div>
                         <label>Data prevista de conclusão:</label>
-                        <input type="date" 
-                            value={periodoDe}
-                            onChange={e => setPeriodoDe(e.target.value)}
-                        />
+                        <input type="date" value={previsionDateStart} onChange={e => setPrevisionDateStart(e.target.value)}/>
                     </div>
                     <div>
-                        <label>até:</label>
-                        <input type="date" 
-                            value={periodoAte}
-                            onChange={e => setPeriodoAte(e.target.value)}
-                        />
+                        <label>até</label>
+                        <input type="date" value={previsionDateEnd} onChange={e => setPrevisionDateEnd(e.target.value)}/>
                     </div>
-                    <div className='line'/>
+                    <div className="separator"/>
                     <div>
-                        <label>Status:</label>
-                        <select
-                             value={status}
-                             onChange={e => setStatus(e.target.value)}
-                        >
+                        <label>Status</label>
+                        <select value={status} onChange={e => setStatus(parseInt(e.target.value))}>
                             <option value={0}>Todas</option>
                             <option value={1}>Ativas</option>
                             <option value={2}>Concluídas</option>
@@ -50,33 +46,24 @@ export const Filter: NextPage<FilterProps> = ({
                     </div>
                 </div>
             </div>
-            {showFilters && <div className='filtrosMobile'>
-                <div>
-                    <label>Data prevista de conclusão:</label>
-                    <input type="date" 
-                         value={periodoDe}
-                         onChange={e => setPeriodoDe(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label>até:</label>
-                    <input type="date" 
-                        value={periodoAte}
-                        onChange={e => setPeriodoAte(e.target.value)}
-                    />
-                </div>
-                <div>
-                    <label>Status:</label>
-                    <select
-                         value={status}
-                         onChange={e => setStatus(e.target.value)}
-                    >
-                        <option value={0}>Todas</option>
-                        <option value={1}>Ativas</option>
-                        <option value={2}>Concluídas</option>
-                    </select>
-                </div>
-            </div>}
+            {showFilters && <div className="mobile-filters">
+                    <div>
+                        <label>Data de previsão de:</label>
+                        <input type="date" value={previsionDateStart} onChange={e => setPrevisionDateStart(e.target.value)}/>
+                    </div>
+                    <div>
+                        <label>Data de previsão até:</label>
+                        <input type="date" value={previsionDateEnd} onChange={e => setPrevisionDateEnd(e.target.value)}/>
+                    </div>
+                    <div>
+                        <label>Status:</label>
+                        <select value={status} onChange={e => setStatus(parseInt(e.target.value))}>
+                            <option value={0}>Todas</option>
+                            <option value={1}>Ativas</option>
+                            <option value={2}>Concluídas</option>
+                        </select>
+                    </div>
+                </div>}
         </div>
-    );
+    )
 }

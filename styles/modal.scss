@@ -1,72 +1,81 @@
 @import './config.scss';
 
-.container-modal{
+.container-modal {
     margin-top: 150px;
 
-    button {
-        width: 40%;
-        height: 50px;
-        background-color: $primaryColor;
-        border: none;
-        color: white;
-        border-radius: 12px;
-        font-size: 15px;
-    }
+    .modal-footer{
+        border-top: none;
+        margin-top: 0;
+        padding-top: 0;
 
-    p {
-        text-align: center;
-        color: $primaryColor;
-        font-size: 17px;
-        margin-top: 10px;
-        font-weight: bold;
-    }
+        .button{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
 
-    input {
-        border-width: 0.5px;
-        border-color: $mediumGreyColor;
-        border-radius: 8px;
-        padding: 10px;
-        height: 50px;
-        margin-top: 10px;
-        width: 90%;
-    }
+            button{
+                width: 40%;
+                height: 50px;
+                border-radius: 12px;
+                background-color: $primaryColor;
+                cursor: pointer;
+                border: none;
+                outline: none;
+                color: white;
+                font-size: 15px;
+                margin-right: 25px;
+            }
 
-    .error{
-        color: $errorColor;
-    }
-
-    .button{
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-
-        span {
-            margin-left: 30px;
-            color: $primaryColor;
-            font-size: 15px;
-            text-decoration: underline;
-            cursor: pointer;
+            span{
+                color: $primaryColor;
+                text-decoration: underline;
+                cursor: pointer;
+            }
         }
     }
 
-    .modal-body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 0px;
-    }
-
-    .modal-content {
+    .modal-content{
         border-radius: 15px;
+
+        .modal-body{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            p{
+                color: $primaryColor;
+                font-size: 17px;
+                margin-top: 10px;
+            }
+
+            .error{
+                font-size: 15px;
+                color: $errorColor;
+            }
+
+            input{
+                border: 0.5px solid $mediumGreyColor;
+                border-radius: 8px;
+                padding: 10px;
+                margin-bottom: 10px;
+                width: 90%;
+            }
+        }
     }
 
-    .modal-footer {
-        border-top: none;
-    }
+    @media screen and (min-width: $mediaQueryDesktop) {
+       .modal-footer{
+            .button{
+               button {
+                background-color: $mediumGreyColor;
 
-    @media screen and (min-width:1024px) {
-        
+                &:hover{
+                    background-color: $primaryColor;
+                }
+               } 
+            }
+       }
     }
 }

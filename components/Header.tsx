@@ -1,28 +1,32 @@
-import { NextPage } from 'next'; 
-import React from 'react'; 
- 
-type HeaderProps = { 
-    sair() : void, 
-    setShowModal(e : boolean) : void 
-} 
- 
-export const Header: NextPage<HeaderProps> = ({sair, setShowModal}) => { 
- 
-    const fullName = localStorage.getItem('userName'); 
-    const userName = fullName?.split(' ')[0] || '...'; 
- 
-    return ( 
-        <div className="container-header"> 
-            <img src="/logo.svg" alt="Logo Fiap" className="logo"/> 
-            <button onClick={e => setShowModal(true)}><span>+</span>Adicionar Tarefa</button> 
-            <div className="mobile"> 
-                <span>Olá {userName}</span> 
-                <img src="/exit-mobile.svg" alt="Sair" onClick={sair}/> 
-            </div> 
-            <div className="desktop"> 
-                <span>Olá {userName}</span> 
-                <img src="/exit-desktop.svg" alt="Sair" onClick={sair}/> 
-            </div> 
-        </div> 
-    ); 
-} 
+/* eslint-disable @next/next/no-img-element */
+import { NextPage } from "next";
+import { loadGetInitialProps } from "next/dist/shared/lib/utils"
+type HeaderProps = {
+    setAccessToken(s : string) : void
+}
+
+export const Header : NextPage<HeaderProps> = ({setAccessToken}) => {
+    const mobile = window.innerWidth < 954;
+
+    const userName = localStorage.getItem('name');
+    const firstName = userName?.split(' ')[0] || 'Anônimo';
+
+    const sair = () => {
+        localStorage.clear();
+        setAccessToken('');
+    }
+
+    return (
+        <div className="container-header">
+            <img src="logo.svg" alt="Logo FIAP" className="logo"/>
+            <button>
+                <strong>+</strong> Adicionar Tarefa
+            </button>
+            <div>
+                <span>Olá {firstName} </span>
+                <img src={mobile ? 'exit-mobile.svg' : 'exit-desktop.svg'} alt="Sair"
+                    onClick={sair}/>
+            </div>
+        </div>
+    )
+}
